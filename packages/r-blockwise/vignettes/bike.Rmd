@@ -1,0 +1,149 @@
+---
+title: "BRM on the bike dataset (regression)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BRM on the bike dataset (regression)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 4.5
+)
+set.seed(1234)
+```
+
+## Overview
+
+This vignette demonstrates Blockwise Reduced Modeling (BRM) on the
+**Capital Bikeshare** dataset, a regression problem where we predict hourly
+ride counts (`cnt`) from weather and calendar features. Because `bike` is
+otherwise complete, we induce a realistic blockwise missing pattern with
+`simulate_blockwise_missing()` to show BRM in its element.
+
+The method, and this dataset's role as a benchmark, are described in
+Srinivasan, Currim, and Ram (2025), *A Reduced Modeling Approach for Making
+Predictions With Incomplete Data Having Blockwise Missing Patterns*, INFORMS
+Journal on Data Science.
+
+```{r load}
+library(blockwise)
+data(bike)
+str(bike, list.len = 20)
+```
+
+## Inducing a blockwise missing pattern
+
+We mask two groups of columns jointly — mimicking the situation where two
+independent data sources feeding your pipeline fail on different subsets of
+rows — plus a small per-column noise rate.
+
+```{r mask}
+bike_miss <- simulate_blockwise_missing(
+  bike,
+  blocks = list(
+    c("windspeed", "hum", "weekday"),
+    c("hr", "temp", "weathersit")
+  ),
+  prop_missing = 0.30,
+  noise        = 0.05
+)
+
+round(colMeans(is.na(bike_miss)) * 100, 1)  # percent missing per column
+```
+
+## Train / test split
+
+```{r split}
+set.seed(1234)
+idx <- sample(nrow(bike_miss), size = floor(0.75 * nrow(bike_miss)))
+train <- bike_miss[idx, ]
+test  <- bike_miss[-idx, ]
+
+X_train <- train[, setdiff(names(train), "cnt")]
+y_train <- train$cnt
+
+X_test  <- test[, setdiff(names(test), "cnt")]
+y_test  <- test$cnt
+```
+
+## Fit BRM
+
+`brm()` is learner-agnostic: pass any `learner()` specification. Here we try
+a linear model and a gradient-boosted tree ensemble. The number of blocks is
+chosen automatically by the elbow heuristic (`choose_num_blocks`).
+
+```{r fit-lm}
+fit_lm <- brm(X_train, y_train, learner = learner_lm())
+fit_lm
+```
+
+```{r fit-gbm, eval = requireNamespace("gbm", quietly = TRUE)}
+fit_gbm <- brm(
+  X_train, y_train,
+  learner  = learner_gbm(distribution = "poisson", n.trees = 300),
+  n_blocks = fit_lm$n_blocks     # reuse so models are comparable
+)
+fit_gbm
+```
+
+## Predict and score
+
+```{r rmse}
+rmse <- function(y, yhat) sqrt(mean((y - yhat)^2))
+
+pred_lm <- predict(fit_lm, X_test)
+cat("BRM (lm)   RMSE:", round(rmse(y_test, pred_lm), 2), "\n")
+```
+
+```{r rmse-gbm, eval = requireNamespace("gbm", quietly = TRUE)}
+pred_gbm <- predict(fit_gbm, X_test)
+cat("BRM (gbm)  RMSE:", round(rmse(y_test, pred_gbm), 2), "\n")
+```
+
+## Comparison to a listwise-deletion baseline
+
+The conventional alternative is to drop rows that have any missing value and
+fit a single model on what remains. This wastes data and gets progressively
+worse as the missing rate grows.
+
+```{r listwise}
+complete_train <- na.omit(train)
+fit_lw <- lm(cnt ~ ., data = complete_train)
+
+# For a fair comparison we need to impute the test set's NAs somehow; use
+# mean/mode from the complete training rows.
+X_test_imp <- X_test
+for (j in names(X_test_imp)) {
+  na_idx <- is.na(X_test_imp[[j]])
+  if (!any(na_idx)) next
+  ref <- complete_train[[j]]
+  if (is.factor(ref)) {
+    X_test_imp[[j]][na_idx] <- names(sort(table(ref), decreasing = TRUE))[1]
+  } else {
+    X_test_imp[[j]][na_idx] <- mean(ref, na.rm = TRUE)
+  }
+}
+pred_lw <- predict(fit_lw, newdata = X_test_imp)
+
+cat("Listwise-deletion lm  RMSE:", round(rmse(y_test, pred_lw), 2), "\n")
+cat("Training rows used    : BRM =", nrow(train), " listwise =",
+    nrow(complete_train), "\n")
+```
+
+BRM keeps all training rows (splitting them into per-pattern subsets); the
+listwise baseline throws away any row with at least one `NA`.
+
+## Citation
+
+If you use BRM in your work, please cite:
+
+> Srinivasan, K., Currim, F., and Ram, S. (2025). *A Reduced Modeling
+> Approach for Making Predictions With Incomplete Data Having Blockwise
+> Missing Patterns.* INFORMS Journal on Data Science.
+
+Run `citation("blockwise")` to get a ready-to-paste BibTeX entry.

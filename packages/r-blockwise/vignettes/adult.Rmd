@@ -1,0 +1,92 @@
+---
+title: "BRM on the adult dataset (binary classification)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BRM on the adult dataset (binary classification)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+set.seed(1234)
+```
+
+## Overview
+
+The UCI **Adult** dataset is a binary classification task: predict whether
+an adult's income exceeds \$50K/year from census features. We use it here to
+show BRM with a probabilistic learner (`learner_glm_binomial()`) on data
+with simulated blockwise missingness.
+
+```{r load}
+library(blockwise)
+data(adult)
+str(adult, list.len = 20)
+table(adult$salary)
+```
+
+## Inducing blockwise missingness
+
+Mirroring the design in the paper, we jointly mask two column groups — a
+"demographics" block and a "work history" block — plus a small column-wise
+noise rate.
+
+```{r mask}
+bike_style_groups <- list(
+  c("age", "workclass", "education"),
+  c("marital.status", "occupation", "relationship")
+)
+
+adult_miss <- simulate_blockwise_missing(
+  adult,
+  blocks       = bike_style_groups,
+  prop_missing = 0.30,
+  noise        = 0.02
+)
+round(colMeans(is.na(adult_miss)) * 100, 1)
+```
+
+## Train / test split
+
+```{r split}
+set.seed(1234)
+idx <- sample(nrow(adult_miss), floor(0.75 * nrow(adult_miss)))
+train <- adult_miss[idx, ]
+test  <- adult_miss[-idx, ]
+
+X_train <- train[, setdiff(names(train), "salary")]
+y_train <- train$salary
+X_test  <- test[,  setdiff(names(test),  "salary")]
+y_test  <- test$salary
+```
+
+## Fit BRM with a logistic-regression learner
+
+```{r fit}
+fit <- brm(X_train, y_train,
+           learner = learner_glm_binomial())
+fit
+```
+
+## Evaluate
+
+```{r eval}
+prob <- predict(fit, X_test)
+pred_class <- as.integer(prob >= 0.5)
+
+acc <- mean(pred_class == y_test)
+cat("Accuracy:", round(acc, 3), "\n")
+
+# Confusion matrix
+table(truth = y_test, predicted = pred_class)
+```
+
+For tree-based classification, swap in `learner_rpart(method = "class")` or
+`learner_gbm(distribution = "bernoulli")`.
+
+## Citation
+
+Srinivasan, K., Currim, F., and Ram, S. (2025). *A Reduced Modeling Approach
+for Making Predictions With Incomplete Data Having Blockwise Missing
+Patterns.* INFORMS Journal on Data Science.

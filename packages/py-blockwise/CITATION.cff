@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper that introduced the method."
+title: "blockwise: Blockwise Reduced Modeling for Python"
+version: 0.1.0
+license: GPL-3.0-or-later
+authors:
+  - family-names: Srinivasan
+    given-names: Karthik
+    email: karthiks@ku.edu
+    affiliation: University of Kansas
+    orcid: "https://orcid.org/0000-0002-1608-6190"
+  - family-names: Currim
+    given-names: Faiz
+    affiliation: University of Arizona
+  - family-names: Ram
+    given-names: Sudha
+    affiliation: University of Arizona
+preferred-citation:
+  type: article
+  title: "A Reduced Modeling Approach for Making Predictions With Incomplete Data Having Blockwise Missing Patterns"
+  authors:
+    - family-names: Srinivasan
+      given-names: Karthik
+      orcid: "https://orcid.org/0000-0002-1608-6190"
+    - family-names: Currim
+      given-names: Faiz
+    - family-names: Ram
+      given-names: Sudha
+  journal: "INFORMS Journal on Data Science"
+  year: 2025
+  doi: "10.1287/ijds.2022.9016"

@@ -1,0 +1,76 @@
+# ============================================================
+# Top-level folders and files NOT meant for the public repo
+# (this repo exists to host the R and Python packages only)
+# ============================================================
+
+# Datasets used by the original simulation study
+/data/
+
+# Paper PDF and other reference materials
+/gitignore_materials/
+
+# Original simulation-study research scripts (not part of either package)
+/code/
+
+# Internal / placeholder
+/PLACEHOLDER_CODE/
+
+# Code Ocean capsule Docker environment and metadata
+/environment/
+/metadata/
+
+# Code Ocean reproduction instructions (references excluded folders)
+/REPRODUCING.md
+
+# ============================================================
+# R session, project, and build artifacts
+# ============================================================
+.Rproj.user/
+*.Rproj
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+
+# Project-local R library caches
+.brm_check/
+.brm_rlib/
+
+# R CMD check output and source tarballs
+*.Rcheck/
+*.tar.gz
+
+# ============================================================
+# Python build, cache, and virtualenv artifacts
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+.venv/
+venv/
+env/
+ENV/
+
+# ============================================================
+# OS and editor junk
+# ============================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

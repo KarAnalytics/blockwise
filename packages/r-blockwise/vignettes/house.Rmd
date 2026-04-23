@@ -1,0 +1,60 @@
+---
+title: "BRM on the house dataset (regression)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BRM on the house dataset (regression)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+set.seed(1234)
+```
+
+## Overview
+
+A third regression demonstration on the King County house-sales dataset
+(~21,600 rows), shipped in full with the package.
+
+```{r load}
+library(blockwise)
+data(house)
+str(house)
+```
+
+## Induce missingness, split, fit
+
+```{r pipeline}
+house_miss <- simulate_blockwise_missing(
+  house,
+  blocks = list(
+    c("sqft_living", "sqft_lot", "sqft_above"),
+    c("bedrooms", "bathrooms", "floors", "grade")
+  ),
+  prop_missing = 0.30,
+  noise        = 0.05
+)
+
+set.seed(1234)
+idx <- sample(nrow(house_miss), floor(0.75 * nrow(house_miss)))
+train <- house_miss[idx, ]
+test  <- house_miss[-idx, ]
+
+X_train <- train[, setdiff(names(train), "price")]
+y_train <- train$price
+X_test  <- test[,  setdiff(names(test),  "price")]
+y_test  <- test$price
+
+fit <- brm(X_train, y_train, learner = learner_lm())
+fit
+
+pred <- predict(fit, X_test)
+cat("RMSE:", round(sqrt(mean((y_test - pred)^2)), 0), "\n")
+```
+
+## Citation
+
+Srinivasan, K., Currim, F., and Ram, S. (2025). *A Reduced Modeling Approach
+for Making Predictions With Incomplete Data Having Blockwise Missing
+Patterns.* INFORMS Journal on Data Science.

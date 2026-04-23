@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blockwise"
+version = "0.1.0"
+description = "Blockwise Reduced Modeling (BRM) for tabular data with blockwise missing patterns"
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+requires-python = ">=3.9"
+authors = [
+    { name = "Karthik Srinivasan", email = "karthiks@ku.edu" },
+    { name = "Faiz Currim" },
+    { name = "Sudha Ram" },
+]
+keywords = [
+    "blockwise missing", "reduced modeling", "incomplete data",
+    "predictive modeling", "tabular"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.22",
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "jupyter", "matplotlib", "ipykernel"]
+
+[project.urls]
+Homepage = "https://github.com/KarAnalytics/blockwise"
+Paper    = "https://pubsonline.informs.org/journal/ijds"
+Issues   = "https://github.com/KarAnalytics/blockwise/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+blockwise = ["data/*.csv"]

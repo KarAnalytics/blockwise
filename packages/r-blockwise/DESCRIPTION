@@ -1,6 +1,6 @@
 Package: blockwise
 Type: Package
-Title: Blockwise Reduced Modeling for Incomplete Tabular Data
+Title: Reduced Modeling for Tabular Data with Blockwise Missingness
 Version: 0.1.0
 Authors@R: c(
     person("Karthik", "Srinivasan", email = "karthiks@ku.edu",

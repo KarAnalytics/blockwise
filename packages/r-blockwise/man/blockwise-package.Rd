@@ -4,7 +4,7 @@
 \name{blockwise-package}
 \alias{blockwise}
 \alias{blockwise-package}
-\title{blockwise: Blockwise Reduced Modeling for tabular data}
+\title{blockwise: Reduced Modeling for Tabular Data with Blockwise Missingness}
 \description{
 Implements the Blockwise Reduced Modeling (BRM) method of Srinivasan,
 Currim, and Ram (2025). The main entry points are:

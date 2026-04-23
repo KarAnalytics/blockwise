@@ -1,4 +1,4 @@
-#' blockwise: Blockwise Reduced Modeling for tabular data
+#' blockwise: Reduced Modeling for Tabular Data with Blockwise Missingness
 #'
 #' Implements the Blockwise Reduced Modeling (BRM) method of Srinivasan,
 #' Currim, and Ram (2025). The main entry points are:

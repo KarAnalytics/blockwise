@@ -9,7 +9,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.linear_model import LinearRegression
 
 from .blocks import choose_num_blocks
-from .impute import hotdeck_impute, impute_with_train
+from .impute import impute_with_train
 from .subsets import build_subsets
 
 
@@ -137,12 +137,7 @@ class BRM(BaseEstimator):
                 "Underlying estimator does not implement predict_proba."
             )
 
-        # Determine n_classes from the first available model.
-        sample_cols = self.columns_[self.models_.index(first)]
-        sample_X = (
-            self.train_ref_[sample_cols].iloc[:1].pipe(hotdeck_impute)
-        )
-        n_classes = first.predict_proba(sample_X).shape[1]
+        n_classes = len(first.classes_)
 
         proba = np.zeros((len(X), n_classes))
         for b, model in enumerate(self.models_):

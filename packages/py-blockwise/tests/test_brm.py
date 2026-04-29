@@ -108,6 +108,15 @@ def test_brm_classification_predict_proba():
     Xm = simulate_blockwise_missing(
         X, blocks=[["a", "b"], ["c", "d"]], prop_missing=0.30
     )
+    # Force the first training row to have NaN in every feature.
+    # An earlier predict_proba implementation inferred n_classes by
+    # calling the underlying classifier on a 1-row hot-deck-imputed
+    # slice of train_ref_, which leaves NaN in place when the slice
+    # has no donors — and then breaks for NaN-intolerant classifiers
+    # like LogisticRegression. n_classes should come from
+    # ``first.classes_`` instead.
+    Xm.iloc[0, :] = np.nan
+
     brm = BRM(estimator=LogisticRegression(max_iter=500), n_blocks=2).fit(Xm, y)
     proba = brm.predict_proba(Xm.iloc[:50])
     assert proba.shape == (50, 2)

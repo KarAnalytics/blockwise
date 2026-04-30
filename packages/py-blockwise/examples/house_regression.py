@@ -1,4 +1,4 @@
-"""BRM regression on the bundled housing dataset.
+""" BRM regression on the bundled housing dataset.
 
 Run from the package directory:
 
@@ -50,7 +50,7 @@ def main() -> None:
     ).fit(X_train, y_train)
     y_pred_log = brm.predict(X_test)
 
-    # Report on the original price scale for interpretability.
+    # Report on the original price scale for interpretability
     y_test = np.exp(y_test_log)
     y_pred = np.exp(y_pred_log)
 
